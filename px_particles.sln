@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30523.141
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "px_particles", "px_particles\px_particles.vcxproj", "{D1342337-1A76-4449-9D67-2F744D0920F2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		debug_optimized|x64 = debug_optimized|x64
+		release|x64 = release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D1342337-1A76-4449-9D67-2F744D0920F2}.debug_optimized|x64.ActiveCfg = debug_optimized|x64
+		{D1342337-1A76-4449-9D67-2F744D0920F2}.debug_optimized|x64.Build.0 = debug_optimized|x64
+		{D1342337-1A76-4449-9D67-2F744D0920F2}.release|x64.ActiveCfg = release|x64
+		{D1342337-1A76-4449-9D67-2F744D0920F2}.release|x64.Build.0 = release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7C3EF3C8-AFAC-4A47-B551-FAD2F1B3B621}
+	EndGlobalSection
+EndGlobal

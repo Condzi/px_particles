@@ -1,0 +1,5 @@
+*.filters
+*.dll
+
+.vs/
+_binaries/

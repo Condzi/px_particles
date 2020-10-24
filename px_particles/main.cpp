@@ -50,17 +50,90 @@ int main()
 	Particles_Arrays particles_arrays;
 
 	setup( window, particles_gl, particles_arrays );
-	GLuint shader = create_shader();
+	unsigned const frame_cap = 30;
+	float const frame_dt = 1.f / frame_cap;
+	window.setFramerateLimit( frame_cap );
+	GLuint const shader = create_shader();
+
+	// click coords are in range <-1, 1> (that's the OpenGL space).
+	// Other values = skip.
+	float click_x, click_y;
+	bool new_click = false;
 
 	while ( window.isOpen() ){
+		//
+		// Handle input.
+		//
 		while ( window.pollEvent( ev ) ){
-			if ( ev.type == sf::Event::Closed ){
+			if ( ev.type == sf::Event::Closed || ( ev.type == sf::Event::KeyPressed && ev.key.code == sf::Keyboard::Escape ) ){
 				window.close();
+			}
+			if ( ev.type == sf::Event::MouseButtonPressed &&
+				 ev.mouseButton.button == sf::Mouse::Left ){
+
+				click_x = 2.0f/window.getSize().x * ev.mouseButton.x - 1;
+				click_y = 2.0f/window.getSize().y * ( window.getSize().y - ev.mouseButton.y ) - 1; // we have to convert to our coordinate sytem, where Y is up not down.
+				new_click = true;
+				std::cout << "Click at (" << ev.mouseButton.x << ", " << ( window.getSize().y - ev.mouseButton.y ) << ") => (" << click_x << ", " << click_y << ")" << std::endl;
 			}
 		}
 
-		glClear( GL_COLOR_BUFFER_BIT );
+		// Variables used in update loops, taken out to avoid constructing on every iteration.
+		Vec8f position;
+		Vec8f velocity;
 
+		// Attract the particles towards cursor position.
+		if ( new_click ){
+			new_click = false;
+			Vec8f const click_pos( click_x, click_y, click_x, click_y, click_x, click_y, click_x, click_y );
+			// Direction vectors: x1, y1,  x2, y2...
+			Vec8f direction;
+
+			for ( unsigned int i = 0; i < particles_arrays.length; i += 4 ){
+				position.load( reinterpret_cast<float*>( &particles_arrays.position[i] ) );
+				direction = click_pos - position;
+				Vec4f const x_coord( direction[0], direction[2], direction[4], direction[6] );
+				Vec4f const y_coord( direction[1], direction[3], direction[5], direction[7] );
+				Vec4f const x_squared( square( x_coord ) );
+				Vec4f const y_squared( square( y_coord ) );
+
+				Vec4f length = sqrt( x_squared + y_squared );
+				// Add a tiny tiny epsilon to not divide by 0.
+				length += 0.001f;
+				// We need 8 element vector.
+				Vec8f const length_8( length[0], length[0], length[1], length[1], length[2], length[2], length[3], length[3] );
+
+				direction /= length_8;
+				// We have to add an impulse, so we do just that.
+				// @MagicNumber
+				direction *= 1;
+				velocity.load( reinterpret_cast<float*>( &particles_arrays.velocity[i] ) );
+				velocity += direction;
+				velocity.store( reinterpret_cast<float*>( &particles_arrays.velocity[i] ) );
+			}
+		}
+		//
+		// Update the positions.
+		//
+		for ( unsigned int i = 0; i < particles_arrays.length; i += 4 ){
+			position.load( reinterpret_cast<float*>( &particles_arrays.position[i] ) );
+			velocity.load( reinterpret_cast<float*>( &particles_arrays.velocity[i] ) );
+
+			position += velocity * frame_dt;
+			position.store( reinterpret_cast<float*>( &particles_arrays.position[i] ) );
+		}
+
+		//
+		// Update OpenGL particles data.
+		//
+		glBindVertexArray( particles_gl.vao );
+		glBindBuffer( GL_ARRAY_BUFFER, particles_gl.vbo );
+		glBufferData( GL_ARRAY_BUFFER, sizeof( Vector ) * particles_arrays.length, particles_arrays.position, GL_DYNAMIC_DRAW );
+
+		//
+		// Render.
+		//
+		glClear( GL_COLOR_BUFFER_BIT );
 		glUseProgram( shader );
 		glBindVertexArray( particles_gl.vao );
 		glDrawArrays( GL_POINTS, 0, particles_arrays.length );
@@ -87,11 +160,12 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 	settings.attributeFlags = sf::ContextSettings::Debug;
 
 	// Read this values from program parametrs or from the input.
-	unsigned int window_width = 800, window_height = 600;
+	unsigned int window_width = 1600, window_height = 900;
 
 	window.create( sf::VideoMode{ window_width, window_height }, "SFML Window", sf::Style::Close, settings );
 	gl_init();
-	glViewport( 0, 0, 800, 600 );
+
+	glViewport( 0, 0, window_width, window_height );
 
 	int const instrset = instruction_set();
 	std::cout << "Instruction set is: " << instrset << ", ";

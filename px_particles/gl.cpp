@@ -1,5 +1,7 @@
 // ReSharper disable CppInconsistentNaming
 #include "gl.hpp"
+
+#include <cstdio>
 // @ErrorLog
 // #include "common.hpp"
 
@@ -1889,7 +1891,7 @@ void gl_init()
 		}();
 
 		// @ErrorLog
-		// com_printf( "OpenGL: %s(%d): '%s'\n", type_str, id, message );
+		printf( "OpenGL: %s(%d): '%s'\n", type_str, id, message );
 	}, nullptr );
 
 	// @ErrorLog

@@ -31,7 +31,7 @@ struct Vector
 struct Particles_Arrays
 {
 	unsigned int length;
-	Vector* position; // Only positions are used to rendering.
+	Vector* position; // Only positions are used for rendering.
 	Vector* velocity;
 };
 

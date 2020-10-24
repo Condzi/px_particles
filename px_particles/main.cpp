@@ -4,6 +4,7 @@
 #include "gl.hpp"
 #include "SIMD/vectorclass.h"
 #include <iostream>
+#include <chrono>
 #include <SFML/Window.hpp>
 
 extern "C"
@@ -39,7 +40,10 @@ struct Particles_Arrays
 
 int  instruction_set();
 void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& particles_arrays );
-void shutdown();
+void shutdown( Particles_GL& particles_gl, Particles_Arrays& particles_arrays );
+// clock utility
+int start_time = 0;
+int milliseconds();
 
 int main()
 {
@@ -50,16 +54,15 @@ int main()
 	Particles_Arrays particles_arrays;
 
 	setup( window, particles_gl, particles_arrays );
-	unsigned const frame_cap = 30;
-	float const frame_dt = 1.f / frame_cap;
-	window.setFramerateLimit( frame_cap );
 	GLuint const shader = create_shader();
 
 	// click coords are in range <-1, 1> (that's the OpenGL space).
 	// Other values = skip.
 	float click_x, click_y;
 	bool new_click = false;
-
+	float frame_dt = 0;
+	int frame_start = milliseconds();
+	int frame_end = 0;
 	while ( window.isOpen() ){
 		//
 		// Handle input.
@@ -139,9 +142,13 @@ int main()
 		glDrawArrays( GL_POINTS, 0, particles_arrays.length );
 
 		window.display();
+
+		frame_end = milliseconds();
+		frame_dt = ( frame_end - frame_start ) / 1000.0f;
+		frame_start = frame_end;
 	}
 
-	shutdown();
+	shutdown( particles_gl, particles_arrays );
 }
 
 int instruction_set()
@@ -152,6 +159,9 @@ int instruction_set()
 
 void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& particles_arrays )
 {
+	auto const duration = std::chrono::high_resolution_clock::now().time_since_epoch();
+	start_time = std::chrono::duration_cast<std::chrono::milliseconds>( duration ).count();
+
 	std::cout << "Setup." << std::endl;
 
 	sf::ContextSettings settings;
@@ -162,7 +172,7 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 	// Read this values from program parametrs or from the input.
 	unsigned int window_width = 1600, window_height = 900;
 
-	window.create( sf::VideoMode{ window_width, window_height }, "SFML Window", sf::Style::Close, settings );
+	window.create( sf::VideoMode{ window_width, window_height }, "Particles!", sf::Style::Close, settings );
 	gl_init();
 
 	glViewport( 0, 0, window_width, window_height );
@@ -258,10 +268,23 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 	std::cout << "Setup finished." << std::endl;
 }
 
-void shutdown()
+void shutdown( Particles_GL& particles_gl, Particles_Arrays& particles_arrays )
 {
 	std::cout << "Shutdown" << std::endl;
 
-	// @Safety: free memory here, destroy GL objects.
+	glDeleteVertexArrays( 1, &particles_gl.vao );
+	glDeleteBuffers( 1, &particles_gl.vbo );
+	free( particles_arrays.position );
+	free( particles_arrays.velocity );
+
 	std::cout << "Shutdown finished." << std::endl;
+}
+
+int milliseconds()
+{
+	using namespace std::chrono;
+	auto const duration = high_resolution_clock::now().time_since_epoch();
+	auto const now = duration_cast<std::chrono::milliseconds>( duration ).count();
+
+	return static_cast<int>( now - start_time );
 }

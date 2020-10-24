@@ -5,6 +5,9 @@
 
 GLuint create_shader()
 {
+	//
+	// We load the shaders source from memory, compile it (and fire assert if an error occurs) and return the compiled shader.
+	//
 	GLchar const* const vert_shader_source = "#version 330\nlayout (location=0) in vec2 l_position;\nout vec2 pos;\nvoid main() { gl_Position = vec4( l_position, 0.1f, 1.0f ); pos = l_position; }";
 	GLchar const* const frag_shader_source = "#version 330\nout vec4 color;\nin vec2 pos;\n void main() { float d = distance( pos, vec2(0,0)); color = vec4( 0.5, d, 0.9, 1.0 ); }";
 
@@ -30,6 +33,7 @@ GLuint create_shader()
 		assert( false );
 	};
 
+	// Compile and check FRAGMENT SHADER.
 	glShaderSource( fragment_shader, 1, &frag_shader_source, &frag_shader_source_length );
 	glCompileShader( fragment_shader );
 

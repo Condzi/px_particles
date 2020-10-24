@@ -7,6 +7,7 @@
 #include <chrono>
 #include <SFML/Window.hpp>
 
+// Request dedicated GPU.
 extern "C"
 {
 	__declspec( dllexport ) unsigned int AmdPowerXpressRequestHighPerformance = 1;
@@ -43,6 +44,7 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 void shutdown( Particles_GL& particles_gl, Particles_Arrays& particles_arrays );
 // clock utility
 int start_time = 0;
+// Returns amount of milliseconds since the application startup.
 int milliseconds();
 
 int main()
@@ -57,7 +59,6 @@ int main()
 	GLuint const shader = create_shader();
 
 	// click coords are in range <-1, 1> (that's the OpenGL space).
-	// Other values = skip.
 	float click_x, click_y;
 	bool new_click = false;
 	float frame_dt = 0;
@@ -74,6 +75,7 @@ int main()
 			if ( ev.type == sf::Event::MouseButtonPressed &&
 				 ev.mouseButton.button == sf::Mouse::Left ){
 
+				// Convert mouse position from window space to OpenGL space.
 				click_x = 2.0f/window.getSize().x * ev.mouseButton.x - 1;
 				click_y = 2.0f/window.getSize().y * ( window.getSize().y - ev.mouseButton.y ) - 1; // we have to convert to our coordinate sytem, where Y is up not down.
 				new_click = true;
@@ -170,6 +172,7 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 	settings.attributeFlags = sf::ContextSettings::Debug;
 
 	// Read this values from program parametrs or from the input.
+	// @MagicNumber
 	unsigned int window_width = 1600, window_height = 900;
 
 	window.create( sf::VideoMode{ window_width, window_height }, "Particles!", sf::Style::Close, settings );
@@ -237,7 +240,8 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 	// Setting up values for manual calculation of the projection matrix.
 	float const win_w = static_cast<float>( window_width );
 	float const win_h = static_cast<float>( window_height );
-	// I really don't know how to name this things.
+	// I really don't know how to name this things. We're basically converting from cartesian coordinates
+	// to OpenGL ones.
 	Vec8f const twos( 2.0f );
 	Vec8f const win_size( win_w, win_h, win_w, win_h, win_w, win_h, win_w, win_h );
 	Vec8f const fraction = twos / win_size;

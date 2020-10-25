@@ -4,7 +4,7 @@
     <ShowAllFiles>true</ShowAllFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
-    <LocalDebuggerCommandArguments>-win_w=1280 -win_h=720 -alignment=16 -pulse_demo=1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-win_w=1280 -win_h=720 -alignment=16 -pulse_demo=1 -pulse_min=50 -pulse_max=200</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug_optimized|x64'">

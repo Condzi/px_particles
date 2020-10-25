@@ -177,7 +177,8 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 	com_milliseconds();
 
 	com_printf( "Setup.\n" );
-
+	EXE_Args const args = parse_exe_args();
+	
 	sf::ContextSettings settings;
 	settings.majorVersion = 4;
 	settings.minorVersion = 4;
@@ -188,25 +189,23 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 	settings.attributeFlags = sf::ContextSettings::Debug;
 #endif
 
-	// Read this values from program parameters or from the input.
-	// @MagicNumber
-	unsigned int window_width = 1000, window_height = 1000;
-	window.create( sf::VideoMode{ window_width, window_height }, "Particles!", sf::Style::Close, settings );
+	window.create( sf::VideoMode{ (unsigned)args.win_w, (unsigned)args.win_h }, "Particles!", sf::Style::Close, settings );
+	window.setFramerateLimit( args.fps );
 	gl_init();
 
-	glViewport( 0, 0, window_width, window_height );
+	glViewport( 0, 0, args.win_w, args.win_h );
 
 	com_printf( "Instruction set is: %d, %s\n", com_instruction_set_id(), com_instruction_set_name() );
 	
-	particles_arrays.length = window_width * window_height;
+	particles_arrays.length = args.win_w * args.win_h;
 	// We demand that because we're using 8 element vector operations ( 2 floats per Vector).
 	assert( particles_arrays.length % 4 == 0 );
 	com_printf( "Allocating memory. %d particles. We use %d bytes per one particle.\n", particles_arrays.length, sizeof( Vector ) * 2 );
 
 	// @MagicNumber: alignment should be customizable? Maybe it should adapt to
 	// the instruction set selected?
-	particles_arrays.position = static_cast<Vector*>( mem_alloc( particles_arrays.length * sizeof( Vector ), 32 ) );
-	particles_arrays.velocity = static_cast<Vector*>( mem_alloc( particles_arrays.length * sizeof( Vector ), 32 ) );
+	particles_arrays.position = static_cast<Vector*>( mem_alloc( particles_arrays.length * sizeof( Vector ), args.alignment ) );
+	particles_arrays.velocity = static_cast<Vector*>( mem_alloc( particles_arrays.length * sizeof( Vector ), args.alignment ) );
 	memset( particles_arrays.velocity, 0, particles_arrays.length * sizeof( Vector ) );
 
 	com_printf( "Setting particles initial positions.\n" );
@@ -215,14 +214,14 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 	// We're assuming (0,0) is bottom left and (win_w, win_h) is top right.
 
 	// We need that for pararell instruction execution. I think. @Speed.
-	assert( window_width % 4 == 0 );
+	assert( args.win_w % 4 == 0 );
 
-	for ( unsigned int y = 0; y < window_height; ){
-		for ( unsigned int x = 0; x < window_width; ){
-			unsigned int const idx_0 = window_width * y + x;
-			unsigned int const idx_1 = window_width * y + x + 1;
-			unsigned int const idx_2 = window_width * y + x + 2;
-			unsigned int const idx_3 = window_width * y + x + 3;
+	for ( int y = 0; y < args.win_h; ){
+		for ( int x = 0; x < args.win_w; ){
+			int const idx_0 = args.win_w * y + x;
+			int const idx_1 = args.win_w * y + x + 1;
+			int const idx_2 = args.win_w * y + x + 2;
+			int const idx_3 = args.win_w * y + x + 3;
 
 
 			particles_arrays.position[idx_0] = Vector{ static_cast<float>( x ),     static_cast<float>( y ) };
@@ -237,8 +236,8 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 
 
 	// Setting up values for manual calculation of the projection matrix.
-	float const win_w = static_cast<float>( window_width );
-	float const win_h = static_cast<float>( window_height );
+	float const win_w = static_cast<float>( args.win_w );
+	float const win_h = static_cast<float>( args.win_h );
 	// I really don't know how to name this things. We're basically converting from Cartesian coordinates
 	// to OpenGL ones.
 	Vec8f const twos( 2.0f );

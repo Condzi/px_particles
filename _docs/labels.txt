@@ -3,12 +3,8 @@
 
 ===============================
 
-@ErrorLog
-    We have to implement error logging for information, warnings and fatal errors (from which we do not recover, just exit gracefully!).
-    Redirect SFML error stream to the error log?
-
-@Assert
-    In code which is copied from my old projects I'm using asserts. Decide, either use <cassert> or make our own.
+@PulseDemo
+    Code related to Pulse Demo idea (see notes.txt). I'm using this label to not forget about it.
 
 @GLDebug
     We're registering error callbacks in the gl.cpp, right after initializing all the pointers. Consider moving this code out of this function. Also, do neccessary check if we're in debug mode and we have valid funciton pointers.

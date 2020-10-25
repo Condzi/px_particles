@@ -82,6 +82,20 @@ int main()
 			}
 		}
 
+		// Dragging the mouse across the screen
+		if ( sf::Keyboard::isKeyPressed( sf::Keyboard::LShift ) && 
+			 sf::Mouse::isButtonPressed( sf::Mouse::Left ) ) {
+			 auto const[x, y] = sf::Mouse::getPosition( window );
+			 
+			 if ( x >= 0 && x <= window.getSize().x && y >= 0 && y <= window.getSize().y ) {
+			 
+				// Convert mouse position from window space to OpenGL space.
+				click_x = 2.0f/window.getSize().x * x - 1;
+				click_y = 2.0f/window.getSize().y * ( window.getSize().y - y ) - 1; // we have to convert to our coordinate sytem, where Y is up not down.
+				new_click = true;
+			 }
+		} 
+
 		// Variables used in update loops, taken out to avoid constructing on every iteration.
 		Vec8f position;
 		Vec8f velocity;
@@ -95,7 +109,8 @@ int main()
 			// Direction vectors: x1, y1,  x2, y2...
 			Vec8f direction;
 
-			// @Speed: this is a performance killer.
+			// @Speed: this is a performance killer in debug mode. Seems to be optimized
+			// in release mode, but I still wanna know how to improve it.
 			for ( unsigned int i = 0; i < particles_arrays.length; i += 4 ){
 				position.load( reinterpret_cast<float*>( &particles_arrays.position[i] ) );
 				direction = click_pos - position;
@@ -113,7 +128,7 @@ int main()
 				direction /= length_8;
 				// We have to add an impulse, so we do just that.
 				// @MagicNumber
-				direction *= 0.4f;
+				direction *= 0.05f;
 				velocity.load( reinterpret_cast<float*>( &particles_arrays.velocity[i] ) );
 				velocity += direction;
 				velocity.store( reinterpret_cast<float*>( &particles_arrays.velocity[i] ) );
@@ -175,9 +190,8 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 
 	// Read this values from program parameters or from the input.
 	// @MagicNumber
-	unsigned int window_width = 1600, window_height = 900;
-
-	window.create( sf::VideoMode{ window_width, window_height }, "Particles!", sf::Style::Close, settings );
+	unsigned int window_width = 1920, window_height = 1080;
+	window.create( sf::VideoMode{ window_width, window_height }, "Particles!", sf::Style::Fullscreen, settings );
 	gl_init();
 
 	glViewport( 0, 0, window_width, window_height );

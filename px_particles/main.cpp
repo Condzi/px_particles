@@ -34,11 +34,22 @@ struct Particles_Arrays
 	Vector* velocity;
 };
 
+// We're using click_x click_y and new_click to generate pulses.
+struct Pulse_Demo
+{
+	int pulse_min;
+	int pulse_max;
+
+	int time_to_next_pulse;
+
+	bool running; // if false we're in normal, interactive execution
+};
+
 //
 // Functions
 //
 
-void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& particles_arrays );
+void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& particles_arrays, Pulse_Demo& pulse_demo );
 void shutdown( Particles_GL& particles_gl, Particles_Arrays& particles_arrays );
 
 // We need a global pointer for force_window_close() function.
@@ -52,9 +63,13 @@ int main()
 
 	Particles_GL particles_gl;
 	Particles_Arrays particles_arrays;
+	Pulse_Demo pulse_demo;
 
-	setup( window, particles_gl, particles_arrays );
+	setup( window, particles_gl, particles_arrays, pulse_demo );
 	GLuint const shader = create_shader();
+
+
+	pulse_demo.time_to_next_pulse = com_random( pulse_demo.pulse_min, pulse_demo.pulse_max );
 
 	// click coords are in range <-1, 1> (that's the OpenGL space).
 	float click_x, click_y;
@@ -70,7 +85,8 @@ int main()
 			if ( ev.type == sf::Event::Closed || ( ev.type == sf::Event::KeyPressed && ev.key.code == sf::Keyboard::Escape ) ){
 				window.close();
 			}
-			if ( ev.type == sf::Event::MouseButtonPressed &&
+			if ( pulse_demo.running == false &&
+				 ev.type == sf::Event::MouseButtonPressed &&
 				 ev.mouseButton.button == sf::Mouse::Left ){
 
 				// Convert mouse position from window space to OpenGL space.
@@ -83,18 +99,19 @@ int main()
 		}
 
 		// Dragging the mouse across the screen
-		if ( sf::Keyboard::isKeyPressed( sf::Keyboard::LShift ) && 
-			 sf::Mouse::isButtonPressed( sf::Mouse::Left ) ) {
-			 auto const[x, y] = sf::Mouse::getPosition( window );
-			 
-			 if ( x >= 0 && x <= window.getSize().x && y >= 0 && y <= window.getSize().y ) {
-			 
-				// Convert mouse position from window space to OpenGL space.
+		if ( pulse_demo.running == false &&
+			 sf::Keyboard::isKeyPressed( sf::Keyboard::LShift ) &&
+			 sf::Mouse::isButtonPressed( sf::Mouse::Left ) ){
+			auto const [x, y] = sf::Mouse::getPosition( window );
+
+			if ( x >= 0 && x <= window.getSize().x && y >= 0 && y <= window.getSize().y ){
+
+			   // Convert mouse position from window space to OpenGL space.
 				click_x = 2.0f/window.getSize().x * x - 1;
 				click_y = 2.0f/window.getSize().y * ( window.getSize().y - y ) - 1; // we have to convert to our coordinate sytem, where Y is up not down.
 				new_click = true;
-			 }
-		} 
+			}
+		}
 
 		// Variables used in update loops, taken out to avoid constructing on every iteration.
 		Vec8f position;
@@ -164,6 +181,18 @@ int main()
 		window.display();
 
 		frame_end = com_milliseconds();
+		// If we're in pulse demo mode, check if it's time to pulse.
+		if ( pulse_demo.running ) {
+			pulse_demo.time_to_next_pulse -= ( frame_end - frame_start );
+			if ( pulse_demo.time_to_next_pulse <= 0 ) {
+				new_click = true;
+				click_x = click_y = 0;
+				pulse_demo.time_to_next_pulse = com_random( pulse_demo.pulse_min, pulse_demo.pulse_max );
+
+				com_printf( "Pulse! Next pulse in %d ms.\n", pulse_demo.time_to_next_pulse );
+			}
+		}
+
 		frame_dt = ( frame_end - frame_start ) / 1000.0f;
 		frame_start = frame_end;
 	}
@@ -171,14 +200,18 @@ int main()
 	shutdown( particles_gl, particles_arrays );
 }
 
-void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& particles_arrays )
+void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& particles_arrays, Pulse_Demo& pulse_demo )
 {
 	// Initialize the timer.
 	com_milliseconds();
 
 	com_printf( "Setup.\n" );
 	EXE_Args const args = parse_exe_args();
-	
+
+	pulse_demo.pulse_min = args.pulse_min;
+	pulse_demo.pulse_max = args.pulse_max;
+	pulse_demo.running = args.pulse_demo != 0;
+
 	sf::ContextSettings settings;
 	settings.majorVersion = 4;
 	settings.minorVersion = 4;
@@ -196,7 +229,7 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 	glViewport( 0, 0, args.win_w, args.win_h );
 
 	com_printf( "Instruction set is: %d, %s\n", com_instruction_set_id(), com_instruction_set_name() );
-	
+
 	particles_arrays.length = args.win_w * args.win_h;
 	// We demand that because we're using 8 element vector operations ( 2 floats per Vector).
 	assert( particles_arrays.length % 4 == 0 );
@@ -284,7 +317,7 @@ void shutdown( Particles_GL& particles_gl, Particles_Arrays& particles_arrays )
 
 void force_window_close()
 {
-	if ( window_ptr ) {
+	if ( window_ptr ){
 		window_ptr->close();
 	}
 }

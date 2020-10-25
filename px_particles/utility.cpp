@@ -91,6 +91,16 @@ void mem_free( void* address )
 	// std::free( address );
 }
 
+// Source: https://stackoverflow.com/a/3747462/6696102
+// @Improvement: We're getting too high values for some reason. Not big deal, but still...
+int com_random( int const min, int const max )
+{
+	static unsigned long seed =  std::chrono::high_resolution_clock::now().time_since_epoch().count();
+
+	seed = ( 214013*seed+2531011 );
+	return ( static_cast<int>( ( seed>>16 )&0x7FFF ) ) % ( max+1 ) + min;
+}
+
 EXE_Args parse_exe_args()
 {
 	// @Safety: check arguments for correctness.

@@ -3,8 +3,8 @@
 
 ===============================
 
-@PulseDemo
-    Code related to Pulse Demo idea (see notes.txt). I'm using this label to not forget about it.
+@Improvement
+    Mark stuff that we could improve. Consider using other labels firs.
 
 @GLDebug
     We're registering error callbacks in the gl.cpp, right after initializing all the pointers. Consider moving this code out of this function. Also, do neccessary check if we're in debug mode and we have valid funciton pointers.

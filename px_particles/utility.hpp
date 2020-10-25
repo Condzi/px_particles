@@ -30,6 +30,8 @@ int com_milliseconds();
 [[nodiscard]] void* mem_alloc( unsigned int size, unsigned int aligment );
 void mem_free( void* address );
 
+[[nodiscard]] int com_random( int min, int max );
+
 // Structure containing command line arguments values. 
 // Names in the structure match names in the command line.
 // usage: -name=value

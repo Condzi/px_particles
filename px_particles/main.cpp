@@ -190,8 +190,8 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 
 	// Read this values from program parameters or from the input.
 	// @MagicNumber
-	unsigned int window_width = 1920, window_height = 1080;
-	window.create( sf::VideoMode{ window_width, window_height }, "Particles!", sf::Style::Fullscreen, settings );
+	unsigned int window_width = 1000, window_height = 1000;
+	window.create( sf::VideoMode{ window_width, window_height }, "Particles!", sf::Style::Close, settings );
 	gl_init();
 
 	glViewport( 0, 0, window_width, window_height );

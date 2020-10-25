@@ -24,3 +24,9 @@
 
 @MagicNumber
     Magic constant which could be a variable.
+
+@DebugBreak
+    We want to stop our execution when an error occurs. Right now we're doing it using `assert( false ), which isn't the best solution. Consider adding `sys_debug_break()`, which is cross-platform. It might use assert( false ) internally, however it will better express our code.
+
+@CrossPlatform
+    Some code may not be cross-platform. I'm developing this program using Visual Studio on Windows 10. Every comment with this label should have explanation of why this solution was used.

@@ -106,10 +106,15 @@
     <ClCompile Include="gl.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="shader.cpp" />
+    <ClCompile Include="utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gl.hpp" />
     <ClInclude Include="shader.hpp">
+      <SubType>
+      </SubType>
+    </ClInclude>
+    <ClInclude Include="utility.hpp">
       <SubType>
       </SubType>
     </ClInclude>

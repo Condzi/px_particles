@@ -196,7 +196,7 @@ static inline uint64_t xgetbv (int ctr) {
     9  or above = AVX512F
    10  or above = AVX512VL, AVX512BW, AVX512DQ
 */
-int instrset_detect(void) {
+inline int instrset_detect(void) {
 
     static int iset = -1;                                  // remember value for next call
     if (iset >= 0) {
@@ -243,7 +243,7 @@ int instrset_detect(void) {
 }
 
 // detect if CPU supports the FMA3 instruction set
-bool hasFMA3(void) {
+inline bool hasFMA3(void) {
     if (instrset_detect() < 7) return false;               // must have AVX
     int abcd[4];                                           // cpuid results
     cpuid(abcd, 1);                                        // call cpuid function 1
@@ -251,7 +251,7 @@ bool hasFMA3(void) {
 }
 
 // detect if CPU supports the FMA4 instruction set
-bool hasFMA4(void) {
+inline bool hasFMA4(void) {
     if (instrset_detect() < 7) return false;               // must have AVX
     int abcd[4];                                           // cpuid results
     cpuid(abcd, 0x80000001);                               // call cpuid function 0x80000001
@@ -259,7 +259,7 @@ bool hasFMA4(void) {
 }
 
 // detect if CPU supports the XOP instruction set
-bool hasXOP(void) {
+inline bool hasXOP(void) {
     if (instrset_detect() < 7) return false;               // must have AVX
     int abcd[4];                                           // cpuid results
     cpuid(abcd, 0x80000001);                               // call cpuid function 0x80000001
@@ -267,7 +267,7 @@ bool hasXOP(void) {
 }
 
 // detect if CPU supports the F16C instruction set
-bool hasF16C(void) {
+inline bool hasF16C(void) {
     if (instrset_detect() < 7) return false;               // must have AVX
     int abcd[4];                                           // cpuid results
     cpuid(abcd, 1);                                        // call cpuid function 1
@@ -275,7 +275,7 @@ bool hasF16C(void) {
 }
 
 // detect if CPU supports the AVX512ER instruction set
-bool hasAVX512ER(void) {
+inline bool hasAVX512ER(void) {
     if (instrset_detect() < 9) return false;               // must have AVX512F
     int abcd[4];                                           // cpuid results
     cpuid(abcd, 7);                                        // call cpuid function 7
@@ -283,7 +283,7 @@ bool hasAVX512ER(void) {
 }
 
 // detect if CPU supports the AVX512VBMI instruction set
-bool hasAVX512VBMI(void) {
+inline bool hasAVX512VBMI(void) {
     if (instrset_detect() < 10) return false;              // must have AVX512BW
     int abcd[4];                                           // cpuid results
     cpuid(abcd, 7);                                        // call cpuid function 7
@@ -291,7 +291,7 @@ bool hasAVX512VBMI(void) {
 }
 
 // detect if CPU supports the AVX512VBMI2 instruction set
-bool hasAVX512VBMI2(void) {
+inline bool hasAVX512VBMI2(void) {
     if (instrset_detect() < 10) return false;              // must have AVX512BW
     int abcd[4];                                           // cpuid results
     cpuid(abcd, 7);                                        // call cpuid function 7

@@ -3,8 +3,11 @@
 #include <cassert>
 #include <cstring>
 
+#include "utility.hpp"
+
 GLuint create_shader()
 {
+	com_printf( "Creating shader.\n" );
 	//
 	// We load the shaders source from memory, compile it (and fire assert if an error occurs) and return the compiled shader.
 	//
@@ -18,7 +21,7 @@ GLuint create_shader()
 	GLuint const vertex_shader   = glCreateShader( GL_VERTEX_SHADER );
 	GLuint const fragment_shader = glCreateShader( GL_FRAGMENT_SHADER );
 
-	char shader_info_log[2000] ={}; // @MagicNumber
+	char shader_info_log[MAX_SIZE_STATIC_STRING] ={};
 	GLint compilation_success = GL_FALSE;
 
 	// Compile and check VERTEX SHADER.
@@ -28,9 +31,7 @@ GLuint create_shader()
 	glGetShaderiv( vertex_shader, GL_COMPILE_STATUS, &compilation_success );
 	if ( compilation_success == GL_FALSE ){
 		glGetShaderInfoLog( vertex_shader, sizeof( shader_info_log ), nullptr, shader_info_log );
-		// @ErrorLog
-		// com_error( "VERTEX shader failed to compile. Info:\n%s\n", shader_info_log );
-		assert( false );
+		com_error( "FRAGMENT shader failed to compile. Info:\n%s\n", shader_info_log );
 	};
 
 	// Compile and check FRAGMENT SHADER.
@@ -40,9 +41,7 @@ GLuint create_shader()
 	glGetShaderiv( fragment_shader, GL_COMPILE_STATUS, &compilation_success );
 	if ( compilation_success == GL_FALSE ){
 		glGetShaderInfoLog( fragment_shader, sizeof( shader_info_log ), nullptr, shader_info_log );
-		// @ErrorLog
-		// com_error( "FRAGMENT shader failed to compile. Info:\n%s\n", shader_info_log );
-		assert( false );
+		com_error( "FRAGMENT shader failed to compile. Info:\n%s\n", shader_info_log );
 	};
 
 	// LINK shaders.
@@ -52,6 +51,8 @@ GLuint create_shader()
 
 	glDeleteShader( vertex_shader );
 	glDeleteShader( fragment_shader );
+
+	com_printf( "Shader created.\n" );
 
 	return shader_program;
 }

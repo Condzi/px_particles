@@ -1,17 +1,16 @@
 #include <cassert>
+#include <SFML/Window.hpp>
+#include <SIMD/vectorclass.h>
 
+#include "utility.hpp"
 #include "shader.hpp"
 #include "gl.hpp"
-#include "SIMD/vectorclass.h"
-#include <iostream>
-#include <chrono>
-#include <SFML/Window.hpp>
 
 // Request dedicated GPU.
 extern "C"
 {
-	__declspec( dllexport ) unsigned int AmdPowerXpressRequestHighPerformance = 1;
-	__declspec( dllexport ) unsigned int NvOptimusEnablement = 1;
+	__declspec( dllexport ) unsigned int AmdPowerXpressRequestHighPerformance = REQUEST_DEDICATED_GPU ? 1 : 0;
+	__declspec( dllexport ) unsigned int NvOptimusEnablement = REQUEST_DEDICATED_GPU ? 1 : 0;
 }
 
 //
@@ -39,17 +38,16 @@ struct Particles_Arrays
 // Functions
 //
 
-int  instruction_set();
 void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& particles_arrays );
 void shutdown( Particles_GL& particles_gl, Particles_Arrays& particles_arrays );
-// clock utility
-int start_time = 0;
-// Returns amount of milliseconds since the application startup.
-int milliseconds();
+
+// We need a global pointer for force_window_close() function.
+sf::Window* window_ptr;
 
 int main()
 {
 	sf::Window window;
+	window_ptr = &window;
 	sf::Event ev;
 
 	Particles_GL particles_gl;
@@ -62,7 +60,7 @@ int main()
 	float click_x, click_y;
 	bool new_click = false;
 	float frame_dt = 0;
-	int frame_start = milliseconds();
+	int frame_start = com_milliseconds();
 	int frame_end = 0;
 	while ( window.isOpen() ){
 		//
@@ -79,7 +77,8 @@ int main()
 				click_x = 2.0f/window.getSize().x * ev.mouseButton.x - 1;
 				click_y = 2.0f/window.getSize().y * ( window.getSize().y - ev.mouseButton.y ) - 1; // we have to convert to our coordinate sytem, where Y is up not down.
 				new_click = true;
-				std::cout << "Click at (" << ev.mouseButton.x << ", " << ( window.getSize().y - ev.mouseButton.y ) << ") => (" << click_x << ", " << click_y << ")" << std::endl;
+
+				com_printf( "Click at [%d, %d] => [%f, %f]\n", ev.mouseButton.x, ( window.getSize().y - ev.mouseButton.y ), click_x, click_y );
 			}
 		}
 
@@ -87,13 +86,16 @@ int main()
 		Vec8f position;
 		Vec8f velocity;
 
-		// Attract the particles towards cursor position.
+		//
+		// Attract the particles towards cursor position, if new_click has been registered.
+		//
 		if ( new_click ){
 			new_click = false;
 			Vec8f const click_pos( click_x, click_y, click_x, click_y, click_x, click_y, click_x, click_y );
 			// Direction vectors: x1, y1,  x2, y2...
 			Vec8f direction;
 
+			// @Speed: this is a performance killer.
 			for ( unsigned int i = 0; i < particles_arrays.length; i += 4 ){
 				position.load( reinterpret_cast<float*>( &particles_arrays.position[i] ) );
 				direction = click_pos - position;
@@ -111,12 +113,13 @@ int main()
 				direction /= length_8;
 				// We have to add an impulse, so we do just that.
 				// @MagicNumber
-				direction *= 1;
+				direction *= 0.4f;
 				velocity.load( reinterpret_cast<float*>( &particles_arrays.velocity[i] ) );
 				velocity += direction;
 				velocity.store( reinterpret_cast<float*>( &particles_arrays.velocity[i] ) );
 			}
 		}
+
 		//
 		// Update the positions.
 		//
@@ -145,7 +148,7 @@ int main()
 
 		window.display();
 
-		frame_end = milliseconds();
+		frame_end = com_milliseconds();
 		frame_dt = ( frame_end - frame_start ) / 1000.0f;
 		frame_start = frame_end;
 	}
@@ -153,25 +156,24 @@ int main()
 	shutdown( particles_gl, particles_arrays );
 }
 
-int instruction_set()
-{
-	static int instr_set = instrset_detect();
-	return instr_set;
-}
-
 void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& particles_arrays )
 {
-	auto const duration = std::chrono::high_resolution_clock::now().time_since_epoch();
-	start_time = std::chrono::duration_cast<std::chrono::milliseconds>( duration ).count();
+	// Initialize the timer.
+	com_milliseconds();
 
-	std::cout << "Setup." << std::endl;
+	com_printf( "Setup.\n" );
 
 	sf::ContextSettings settings;
 	settings.majorVersion = 4;
 	settings.minorVersion = 4;
+	// @GL_Debug: don't ask for debug context when in release mode.
+#ifdef NDEBUG
+	settings.attributeFlags = sf::ContextSettings::Core;
+#else
 	settings.attributeFlags = sf::ContextSettings::Debug;
+#endif
 
-	// Read this values from program parametrs or from the input.
+	// Read this values from program parameters or from the input.
 	// @MagicNumber
 	unsigned int window_width = 1600, window_height = 900;
 
@@ -180,37 +182,20 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 
 	glViewport( 0, 0, window_width, window_height );
 
-	int const instrset = instruction_set();
-	std::cout << "Instruction set is: " << instrset << ", ";
-	switch ( instrset ){
-	case 0: std::cout << "80386 instruction set"; break;
-	case 1: std::cout << "SSE (XMM) supported by CPU (not testing for OS support)"; break;
-	case 2: std::cout << "SSE2"; break;
-	case 3: std::cout << "SSE3"; break;
-	case 4: std::cout << "Supplementary SSE3 (SSSE3)"; break;
-	case 5: std::cout << "SSE4.1"; break;
-	case 6: std::cout << "SSE4.2"; break;
-	case 7: std::cout << "AVX supported by CPU and operating system"; break;
-	case 8: std::cout << "AVX2"; break;
-	case 9: std::cout << "AVX512F"; break;
-	case 10: std::cout << "AVX512VL, AVX512BW, AVX512DQ"; break;
-
-	default: std::cout << "unknown instruction set.";
-	}
-	std::cout << std::endl;
-
+	com_printf( "Instruction set is: %d, %s\n", com_instruction_set_id(), com_instruction_set_name() );
+	
 	particles_arrays.length = window_width * window_height;
-	// @Assert
 	// We demand that because we're using 8 element vector operations ( 2 floats per Vector).
 	assert( particles_arrays.length % 4 == 0 );
-	std::cout << "Allocating memory, one particle per px = " << particles_arrays.length << " particles * 4*sizeof( float )" << std::endl;
+	com_printf( "Allocating memory. %d particles. We use %d bytes per one particle.\n", particles_arrays.length, sizeof( Vector ) * 2 );
 
-	// @Safety @Aligment
-	particles_arrays.position = static_cast<Vector*>( malloc( particles_arrays.length * sizeof( Vector ) ) );
-	particles_arrays.velocity = static_cast<Vector*>( malloc( particles_arrays.length * sizeof( Vector ) ) );
-	memset( particles_arrays.velocity, 0, sizeof( Vector ) * particles_arrays.length );
+	// @MagicNumber: alignment should be customizable? Maybe it should adapt to
+	// the instruction set selected?
+	particles_arrays.position = static_cast<Vector*>( mem_alloc( particles_arrays.length * sizeof( Vector ), 32 ) );
+	particles_arrays.velocity = static_cast<Vector*>( mem_alloc( particles_arrays.length * sizeof( Vector ), 32 ) );
+	memset( particles_arrays.velocity, 0, particles_arrays.length * sizeof( Vector ) );
 
-	std::cout << "Setting particles positions." << std::endl;
+	com_printf( "Setting particles initial positions.\n" );
 
 	// Set up their real positions, e.g in our window coordinates.
 	// We're assuming (0,0) is bottom left and (win_w, win_h) is top right.
@@ -226,7 +211,7 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 			unsigned int const idx_3 = window_width * y + x + 3;
 
 
-			particles_arrays.position[idx_0] = Vector{ static_cast<float>( x ), static_cast<float>( y ) };
+			particles_arrays.position[idx_0] = Vector{ static_cast<float>( x ),     static_cast<float>( y ) };
 			particles_arrays.position[idx_1] = Vector{ static_cast<float>( x + 1 ), static_cast<float>( y ) };
 			particles_arrays.position[idx_2] = Vector{ static_cast<float>( x + 2 ), static_cast<float>( y ) };
 			particles_arrays.position[idx_3] = Vector{ static_cast<float>( x + 3 ), static_cast<float>( y ) };
@@ -240,7 +225,7 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 	// Setting up values for manual calculation of the projection matrix.
 	float const win_w = static_cast<float>( window_width );
 	float const win_h = static_cast<float>( window_height );
-	// I really don't know how to name this things. We're basically converting from cartesian coordinates
+	// I really don't know how to name this things. We're basically converting from Cartesian coordinates
 	// to OpenGL ones.
 	Vec8f const twos( 2.0f );
 	Vec8f const win_size( win_w, win_h, win_w, win_h, win_w, win_h, win_w, win_h );
@@ -257,7 +242,7 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 		i += 4;
 	}
 
-	std::cout << "Creating OpenGL objects" << std::endl;
+	com_printf( "Creating OpenGL objects.\n" );
 
 	glGenVertexArrays( 1, &particles_gl.vao );
 	glCreateBuffers( 1, &particles_gl.vbo );
@@ -269,26 +254,24 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 	glEnableVertexAttribArray( 0 );
 	glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, sizeof( Vector ), (void*)0 );
 
-	std::cout << "Setup finished." << std::endl;
+	com_printf( "Setup finished.\n\n" );
 }
 
 void shutdown( Particles_GL& particles_gl, Particles_Arrays& particles_arrays )
 {
-	std::cout << "Shutdown" << std::endl;
+	com_printf( "Shutdown.\n" );
 
 	glDeleteVertexArrays( 1, &particles_gl.vao );
 	glDeleteBuffers( 1, &particles_gl.vbo );
-	free( particles_arrays.position );
-	free( particles_arrays.velocity );
+	mem_free( particles_arrays.position );
+	mem_free( particles_arrays.velocity );
 
-	std::cout << "Shutdown finished." << std::endl;
+	com_printf( "Shutdown finished.\n" );
 }
 
-int milliseconds()
+void force_window_close()
 {
-	using namespace std::chrono;
-	auto const duration = high_resolution_clock::now().time_since_epoch();
-	auto const now = duration_cast<std::chrono::milliseconds>( duration ).count();
-
-	return static_cast<int>( now - start_time );
+	if ( window_ptr ) {
+		window_ptr->close();
+	}
 }

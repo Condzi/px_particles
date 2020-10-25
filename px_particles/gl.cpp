@@ -1,9 +1,8 @@
 // ReSharper disable CppInconsistentNaming
 #include "gl.hpp"
 
-#include <cstdio>
-// @ErrorLog
-// #include "common.hpp"
+#include "utility.hpp"
+#include <cassert>
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -51,8 +50,7 @@ void gl_open_lib()
 	libGL = dlopen( "libGL.so", RTLD_NOW | RTLD_GLOBAL );
 #endif
 	if ( gl_lib_handle == nullptr ) {
-	// @ErrorLog
-	//	com_error( "opengl32.dll couldn't be loaded\n" );
+		com_error( "opengl32.dll couldn't be loaded\n" );
 	}
 #ifndef __APPLE__
 #ifdef _WIN32
@@ -62,8 +60,7 @@ void gl_open_lib()
 	getProcAddress = (decltype( getProcAddress ))dlsym( libGL, "glXGetProcAddressARB" );
 #endif
 	if ( get_proc_address == nullptr ) {
-	// @ErrorLog
-	//	com_error( "getProcAddress is nullptr\n" );
+		com_error( "getProcAddress is nullptr\n" );
 	}
 #endif
 }
@@ -83,8 +80,7 @@ void deinit()
 [[nodiscard]] static void* load( char const* name )
 {
 	void* result = nullptr;
-	// @Assert
-//	assert( gl_lib_handle != nullptr );
+	assert( gl_lib_handle != nullptr );
 
 #ifndef __APPLE__
 	if ( get_proc_address != nullptr ) {
@@ -101,8 +97,7 @@ void deinit()
 	}
 
 	if ( result == nullptr ) {
-	// @ErrorLog
-	//	com_dprintf( "'%s' failed to load.\n", name );
+		com_printf( "'%s' failed to load.\n", name );
 	}
 	return result;
 }
@@ -1890,12 +1885,10 @@ void gl_init()
 			}
 		}();
 
-		// @ErrorLog
-		printf( "OpenGL: %s(%d): '%s'\n", type_str, id, message );
+		com_printf( "OpenGL: %s(%d): '%s'\n", type_str, id, message );
 	}, nullptr );
 
-	// @ErrorLog
-	// com_printf( "OpenGL function pointers initialized.\n" );
+	com_printf( "OpenGL function pointers initialized.\n" );
 }
 
 #ifdef _MSC_VER

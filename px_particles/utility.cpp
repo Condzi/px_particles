@@ -10,6 +10,9 @@
 
 void com_printf( char const* fmt, ... )
 {
+	// @Improvement: use variadic template arguments. When I tried to
+	// use them at the time of writing this comment it gives me internal
+	// compiler error. F. ~condzi, 26.10.2020
 	va_list argptr;
 	char msg[MAX_SIZE_STATIC_STRING];
 
@@ -17,25 +20,26 @@ void com_printf( char const* fmt, ... )
 	int const chars_written  = vsnprintf_s( msg, MAX_SIZE_STATIC_STRING, MAX_SIZE_STATIC_STRING-1, fmt, argptr );
 	va_end( argptr );
 
+	if ( chars_written == -1 ){
+		com_printf( "!!! WARNING: vsnprintf_s returned -1!\n" );
+		return;
+	}
 	if ( (unsigned)chars_written > MAX_SIZE_STATIC_STRING ){
 		com_printf( "!!! WARNING: message buffer overflow!\n" );
 		msg[MAX_SIZE_STATIC_STRING - 2] = '\n';
 		msg[MAX_SIZE_STATIC_STRING - 1] = '\0';
-	}
-	if ( chars_written == -1 ){
-		com_printf( "!!! WARNING: vsnprintf_s returned -1!\n" );
-		return;
 	}
 
 	bool const fputs_success = fputs( msg, stdout ) >= 0;
 	assert( fputs_success );
 }
 
-bool com_error_entered = false;
-char com_error_message[MAX_SIZE_STATIC_STRING];
 
 void com_error( char const* fmt, ... )
 {
+	static bool com_error_entered = false;
+	static char com_error_message[MAX_SIZE_STATIC_STRING];
+
 	if ( com_error_entered ){
 		com_printf( "!!! Recursive error after '%s'", com_error_message );
 		// @DebugBreak

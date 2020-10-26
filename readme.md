@@ -1,6 +1,7 @@
 # OpenGL + SIMD + C++
+## v1.0
 It's a test project. Main purpose is to play with SIMD (Single Instruction Multiple Data). I'm using [vectorclass](https://github.com/vectorclass) library for SIMD, [SFML](https://github.com/sfml/sfml) for Window creation and input handling. 
-# **Using**
+# **Usage**
 Use *left mouse button* to attract particles towards it. Hold *left shift* to attract them continuously.
 # **Command line arguments**
 `-arg_name=value`, for example `-win_w=1280 -win_h=720`.

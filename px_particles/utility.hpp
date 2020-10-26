@@ -41,7 +41,6 @@ struct EXE_Args
 	int win_h = 600;
 	int fps   = 0; // 0 means no limit
 	int alignment = 32;
-	// @PulseDemo
 	int pulse_demo = 0; // 0 is false, non-zero is true
 	int pulse_min = 100;
 	int pulse_max = 900;

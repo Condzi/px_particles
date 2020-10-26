@@ -44,6 +44,7 @@ struct EXE_Args
 	int pulse_demo = 0; // 0 is false, non-zero is true
 	int pulse_min = 100;
 	int pulse_max = 900;
+	int use_lines = 0; // 0 is false, non-zero is true
 };
 
 [[nodiscard]] EXE_Args parse_exe_args();

@@ -11,9 +11,10 @@ Use *left mouse button* to attract particles towards it. Hold *left shift* to at
 | win_h  | window height | 600 |
 | fps  | FPS limit | 0 (no limit) |
 | alignment  | alignment of particles memory, has to be power of 2 | 32 |
-| pulse_demo | are we running the pulsating demo mode? Interaction is disabled in pulse mode. | 0 (non-zero means yes)
+| pulse_demo | are we running the pulsating demo mode? Interaction is disabled in pulse mode. | 0 (non-zero means yes) |
 | pulse_min | minimum pulse time, in milliseconds | 100 |
 | pulse_max | maximum pulse time, in milliseconds | 900 |
+| use_lines | use GL_LINE_LOOP instead of GL_POINTS, gives a cool effect | 0 (non-zero means yes) |
 
 
 # Compiling

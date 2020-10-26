@@ -177,6 +177,15 @@ EXE_Args parse_exe_args()
 				com_error( "sscanf_s failed for argument %s\n", argv[i] );
 			}
 			com_printf( "Pulse max = %dms\n", args.pulse_max );
+			continue;
+		}
+
+		if ( memcmp( argv[i], "-use_lines=", 11 ) == 0 ) {
+			if ( sscanf_s( argv[i] + 11, "%d", &args.use_lines ) < 1 ){
+				com_error( "sscanf_s failed for argument %s\n", argv[i] );
+			}
+			com_printf( "Use lines = %d (0 means off, non-zero means on)\n", args.use_lines );
+			continue;
 		}
 	}
 

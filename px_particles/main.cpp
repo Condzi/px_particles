@@ -20,6 +20,7 @@ extern "C"
 struct Particles_GL
 {
 	GLuint vao, vbo;
+	GLenum mode; // GL_POINTS or GL_LINE_LOOP
 };
 
 struct Vector
@@ -188,7 +189,7 @@ int main()
 		glBindVertexArray( particles_gl.vao );
 		// GL_LINE_LOOP looks kinda cool, but we have too
 		// many particles.
-		glDrawArrays( GL_LINE_LOOP, 0, particles_arrays.length );
+		glDrawArrays( particles_gl.mode, 0, particles_arrays.length );
 
 		window.display();
 
@@ -272,6 +273,8 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 	pulse_demo.pulse_min = args.pulse_min;
 	pulse_demo.pulse_max = args.pulse_max;
 	pulse_demo.running = args.pulse_demo != 0;
+
+	particles_gl.mode = args.use_lines == 0 ? GL_POINTS : GL_LINE_LOOP;
 
 	sf::ContextSettings settings;
 	settings.majorVersion = 4;

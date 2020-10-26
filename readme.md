@@ -20,13 +20,16 @@ Use *left mouse button* to attract particles towards it. Hold *left shift* to at
 # Compiling
 Just open the .sln using Visual Studio 2019 and compile. Binaries will in the `_binaries` folder.
 
+# [Lines demo](https://youtu.be/ypdq5brqjEE)
 # [Pulse demo](https://youtu.be/V5rohV-xLDM)
 # [Clicking demo](https://youtu.be/A0FwfGXOCbs)
 # Screens
 Just note that the coolset thing about this program is that particles move really fast. It's hard to catch the fun stuff on still images. 
-Pulsating particles mode:
+## Lines mode:
+![](_img/ss_lines.png)
+## Pulsating particles mode:
 ![](_img/ss_0.png)
-Following screenshots were captured in a 1000x1000 window, 1 milion particles, clicking mode.
+## Following screenshots were captured in a 1000x1000 window, 1 milion particles, clicking mode.
 ![](_img/ss_1.png)
 ![](_img/ss_2.png)
 ![](_img/ss_3.png)

@@ -1,18 +1,44 @@
 #include "shader.hpp"
 
-#include <cassert>
 #include <cstring>
 
 #include "utility.hpp"
 
+//
+// We load the shaders source from memory, compile it (and fire assert if an error occurs) and return the compiled shader.
+//
 GLuint create_shader()
 {
 	com_printf( "Creating shader.\n" );
+
 	//
-	// We load the shaders source from memory, compile it (and fire assert if an error occurs) and return the compiled shader.
+	// Vertex Shader Source
 	//
-	GLchar const* const vert_shader_source = "#version 330\nlayout (location=0) in vec2 l_position;\nout vec2 pos;\nvoid main() { gl_Position = vec4( l_position, 0.1f, 1.0f ); pos = l_position; }";
-	GLchar const* const frag_shader_source = "#version 330\nout vec4 color;\nin vec2 pos;\n void main() { float d = distance( pos, vec2(0,0)); color = vec4( 0.5, d, 0.9, 1.0 ); }";
+	GLchar const* const vert_shader_source = R"XXX(
+#version 330
+layout ( location=0 ) in vec2 l_position;
+out vec2 pos;
+
+void main() 
+{ 
+	gl_Position = vec4( l_position, 0.1f, 1.0f ); 
+	pos = l_position; 
+}
+)XXX";
+
+	//
+	// Fragment Shader Source
+	//
+	GLchar const* const frag_shader_source = R"XXX(
+#version 330
+out vec4 color;
+in vec2 pos;
+void main() 
+{ 
+	float d = distance( pos, vec2( 0,0 ) ); 
+	color = vec4( 0.5, d, 0.9, 1.0 ); 
+}
+)XXX";
 
 	GLint const vert_shader_source_length = strlen( vert_shader_source );
 	GLint const frag_shader_source_length = strlen( frag_shader_source );

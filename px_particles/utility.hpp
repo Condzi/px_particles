@@ -37,14 +37,14 @@ void mem_free( void* address );
 // usage: -name=value
 struct EXE_Args 
 {
-	int win_w = 800;
-	int win_h = 600;
-	int fps   = 0; // 0 means no limit
-	int alignment = 32;
+	int win_w      = 800;
+	int win_h      = 600;
+	int fps        = 0; // 0 means no limit
+	int alignment  = 32;
 	int pulse_demo = 0; // 0 is false, non-zero is true
-	int pulse_min = 100;
-	int pulse_max = 900;
-	int use_lines = 0; // 0 is false, non-zero is true
+	int pulse_min  = 100;
+	int pulse_max  = 900;
+	int use_lines  = 0; // 0 is false, non-zero is true
 };
 
 [[nodiscard]] EXE_Args parse_exe_args();

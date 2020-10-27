@@ -142,7 +142,6 @@ EXE_Args parse_exe_args()
 		if ( memcmp( argv[i], "-fps=", 5 ) == 0 ){
 			if ( sscanf_s( argv[i] + 5, "%d", &args.fps ) < 1 ){
 				com_error( "sscanf_s failed for argument %s\n", argv[i] );
-				continue;
 			}
 			com_printf( "FPS limit = %d\n", args.fps );
 			continue;

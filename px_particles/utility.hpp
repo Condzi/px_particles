@@ -27,7 +27,7 @@ int com_milliseconds();
 //
 
 // Performs an aligned allocation. Alignment should be power of two.
-[[nodiscard]] void* mem_alloc( unsigned int size, unsigned int aligment );
+[[nodiscard]] void* mem_alloc( unsigned int size, unsigned int alignment );
 void mem_free( void* address );
 
 [[nodiscard]] int com_random( int min, int max );

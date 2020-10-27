@@ -6,14 +6,8 @@
 @Improvement
     Mark stuff that we could improve. Consider using other labels firs.
 
-@GLDebug
-    We're registering error callbacks in the gl.cpp, right after initializing all the pointers. Consider moving this code out of this function. Also, do neccessary check if we're in debug mode and we have valid funciton pointers.
-
 @Safety
     We're missing some safety checks. For the memory allocation, for example.
-
-@Aligment
-    For optimal speed, vectorized memory should be aligned. Figure out how to do this correctly.
 
 @Speed
     Optimization ideas.

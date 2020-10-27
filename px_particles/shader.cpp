@@ -40,8 +40,8 @@ void main()
 }
 )XXX";
 
-	GLint const vert_shader_source_length = strlen( vert_shader_source );
-	GLint const frag_shader_source_length = strlen( frag_shader_source );
+	GLint const vert_shader_source_length = static_cast<GLint>( strlen( vert_shader_source ) );
+	GLint const frag_shader_source_length = static_cast<GLint>( strlen( frag_shader_source ) );
 
 	GLuint const shader_program  = glCreateProgram();
 	GLuint const vertex_shader   = glCreateShader( GL_VERTEX_SHADER );

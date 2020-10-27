@@ -1842,15 +1842,11 @@ void gl_init()
 
 	deinit();
 
-	glEnable( GL_BLEND );
-	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-
-	// @GLDebug
-
 	// 
 	// Register OpenGL debug callback. Should be do only for 4.4 or higher.
 	//
 
+#ifndef NDEBUG
 	glEnable( GL_DEBUG_OUTPUT );
 	glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
 
@@ -1888,6 +1884,7 @@ void gl_init()
 		com_printf( "OpenGL: %s(%d): '%s'\n", type_str, id, message );
 	}, nullptr );
 
+#endif
 	com_printf( "OpenGL function pointers initialized.\n" );
 }
 

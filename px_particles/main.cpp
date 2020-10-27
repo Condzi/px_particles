@@ -75,7 +75,7 @@ int main()
 	pulse_demo.time_to_next_pulse = com_random( pulse_demo.pulse_min, pulse_demo.pulse_max );
 
 	// click coords are in range <-1, 1> (that's the OpenGL space).
-	float click_x, click_y;
+	float click_x = 0, click_y = 0;
 	bool new_click = false;
 	float frame_dt = 0;
 	int frame_start = com_milliseconds();
@@ -94,7 +94,7 @@ int main()
 
 				// Convert mouse position from window space to OpenGL space.
 				click_x = 2.0f/window.getSize().x * ev.mouseButton.x - 1;
-				click_y = 2.0f/window.getSize().y * ( window.getSize().y - ev.mouseButton.y ) - 1; // we have to convert to our coordinate sytem, where Y is up not down.
+				click_y = 2.0f/window.getSize().y * ( window.getSize().y - ev.mouseButton.y ) - 1; // we have to convert to our coordinate system, where Y is up not down.
 				new_click = true;
 
 				com_printf( "Click at [%d, %d] => [%f, %f]\n", ev.mouseButton.x, ( window.getSize().y - ev.mouseButton.y ), click_x, click_y );
@@ -115,7 +115,7 @@ int main()
 			 sf::Mouse::isButtonPressed( sf::Mouse::Left ) ){
 			auto const [x, y] = sf::Mouse::getPosition( window );
 
-			if ( x >= 0 && x <= window.getSize().x && y >= 0 && y <= window.getSize().y ){
+			if ( x >= 0 && x <= (int)window.getSize().x && y >= 0 && y <= (int)window.getSize().y ){
 
 			   // Convert mouse position from window space to OpenGL space.
 				click_x = 2.0f/window.getSize().x * x - 1;
@@ -301,8 +301,6 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 	assert( args.win_w % 4 == 0 );
 	com_printf( "Allocating memory. %d particles. We use %d bytes per one particle.\n", particles_arrays.length, sizeof( Vector ) * 2 );
 
-	// @MagicNumber: alignment should be customizable? Maybe it should adapt to
-	// the instruction set selected?
 	particles_arrays.position = static_cast<Vector*>( mem_alloc( particles_arrays.length * sizeof( Vector ), args.alignment ) );
 	particles_arrays.velocity = static_cast<Vector*>( mem_alloc( particles_arrays.length * sizeof( Vector ), args.alignment ) );
 

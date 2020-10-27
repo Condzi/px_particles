@@ -80,6 +80,9 @@ int main()
 	float frame_dt = 0;
 	int frame_start = com_milliseconds();
 	int frame_end = 0;
+	// Variables used in update loops, taken out to avoid constructing on every iteration.
+	Vec8f position;
+	Vec8f velocity;
 	while ( window.isOpen() ){
 		//
 		// Handle input.
@@ -123,10 +126,6 @@ int main()
 				new_click = true;
 			}
 		}
-
-		// Variables used in update loops, taken out to avoid constructing on every iteration.
-		Vec8f position;
-		Vec8f velocity;
 
 		//
 		// Attract the particles towards cursor position, if new_click has been registered.
@@ -277,12 +276,15 @@ void setup( sf::Window& window, Particles_GL& particles_gl, Particles_Arrays& pa
 	particles_gl.mode = args.use_lines == 0 ? GL_POINTS : GL_LINE_LOOP;
 
 	sf::ContextSettings settings;
-	settings.majorVersion = 4;
-	settings.minorVersion = 4;
-	// @GL_Debug: don't ask for debug context when in release mode.
 #ifdef NDEBUG
+// We're using OpenGL 3.0 features. Maybe in the future request 3.0, but since we're loading all the
+// OpenGL pointers I will leave this as it is. It's getting the newest OpenGL possible.
+//	settings.majorVersion = 3;
+//	settings.minorVersion = 0;
 	settings.attributeFlags = sf::ContextSettings::Core;
 #else
+	settings.majorVersion = 4;
+	settings.minorVersion = 4;
 	settings.attributeFlags = sf::ContextSettings::Debug;
 #endif
 

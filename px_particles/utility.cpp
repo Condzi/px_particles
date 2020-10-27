@@ -74,15 +74,15 @@ int com_milliseconds()
 	return static_cast<int>( now - start_time );
 }
 
-void* mem_alloc( unsigned int size, unsigned int aligment )
+void* mem_alloc( unsigned int size, unsigned int alignment )
 {
 	// @CrossPlatform: MSVC seem to not have std::aligned_alloc implemented. Weird. One solution
 	// To this problem is to have an #ifndef _MSVC or something like that, then use _algined_malloc
 	// in MSVC and std::aligned_alloc in other compilers.
-	void* mem = _aligned_malloc( size, aligment );
+	void* mem = _aligned_malloc( size, alignment );
 
 	if ( mem == nullptr ){
-		com_error( "mem_alloc got nullptr. size = %d, aligment = %d.\n", size, aligment );
+		com_error( "mem_alloc got nullptr. size = %d, alignment = %d.\n", size, alignment );
 	}
 
 	return mem;
@@ -122,69 +122,37 @@ EXE_Args parse_exe_args()
 	com_printf( "%u command line arguments provided.\n", argc - 1 );
 
 	// Starting from 1 because first argument it's the exe name.
-	for ( unsigned int i = 1; i < argc; ++i ){
-		if ( memcmp( argv[i], "-win_w=", 7 ) == 0 ){
-			if ( sscanf_s( argv[i] + 7, "%d", &args.win_w ) < 1 ){
-				com_error( "sscanf_s failed for argument %s\n", argv[i] );
-			}
-			com_printf( "Window width = %d\n", args.win_w );
-			continue;
-		}
+	unsigned int i = 1;
+	// Helper lambda, using memcmp we can easily make a mistake. 
+	auto try_to_get_argument = [&]( char const* arg_name, auto& arg_to_assign ){
+		size_t const arg_len = strlen( arg_name );
 
-		if ( memcmp( argv[i], "-win_h=", 7 ) == 0 ){
-			if ( sscanf_s( argv[i] + 7, "%d", &args.win_h ) < 1 ){
+		if ( memcmp( argv[i], arg_name, arg_len ) == 0 ){
+			if ( sscanf_s( argv[i] + arg_len, "%d", &arg_to_assign ) < 1 ){
 				com_error( "sscanf_s failed for argument %s\n", argv[i] );
 			}
-			com_printf( "Window height = %d\n", args.win_h );
-			continue;
+			return true;
 		}
+		return false;
+	};
 
-		if ( memcmp( argv[i], "-fps=", 5 ) == 0 ){
-			if ( sscanf_s( argv[i] + 5, "%d", &args.fps ) < 1 ){
-				com_error( "sscanf_s failed for argument %s\n", argv[i] );
-			}
-			com_printf( "FPS limit = %d\n", args.fps );
-			continue;
-		}
-
-		if ( memcmp( argv[i], "-alignment=", 11 ) == 0 ){
-			if ( sscanf_s( argv[i] + 11, "%d", &args.alignment ) < 1 ){
-				com_error( "sscanf_s failed for argument %s\n", argv[i] );
-			}
-			com_printf( "Alignment = %d\n", args.alignment );
-			continue;
-		}
-
-		if ( memcmp( argv[i], "-pulse_demo=", 12 ) == 0 ){
-			if ( sscanf_s( argv[i] + 12, "%d", &args.pulse_demo ) < 1 ){
-				com_error( "sscanf_s failed for argument %s\n", argv[i] );
-			}
-			com_printf( "Pulse demo = %d (0 means off, non-zero means on)\n", args.pulse_demo );
-			continue;
-		}
-
-		if ( memcmp( argv[i], "-pulse_min=", 11 ) == 0 ){
-			if ( sscanf_s( argv[i] + 11, "%d", &args.pulse_min ) < 1 ){
-				com_error( "sscanf_s failed for argument %s\n", argv[i] );
-			}
-			com_printf( "Pulse min = %dms\n", args.pulse_min );
-			continue;
-		}
-
-		if ( memcmp( argv[i], "-pulse_max=", 11 ) == 0 ){
-			if ( sscanf_s( argv[i] + 11, "%d", &args.pulse_max ) < 1 ){
-				com_error( "sscanf_s failed for argument %s\n", argv[i] );
-			}
-			com_printf( "Pulse max = %dms\n", args.pulse_max );
-			continue;
-		}
-
-		if ( memcmp( argv[i], "-use_lines=", 11 ) == 0 ) {
-			if ( sscanf_s( argv[i] + 11, "%d", &args.use_lines ) < 1 ){
-				com_error( "sscanf_s failed for argument %s\n", argv[i] );
-			}
-			com_printf( "Use lines = %d (0 means off, non-zero means on)\n", args.use_lines );
-			continue;
+	for ( ; i < argc; ++i ){
+		if        ( try_to_get_argument( "-win_w=", args.win_w ) ){
+			com_printf( " Window width  = %d\n", args.win_w );
+		} else if ( try_to_get_argument( "-win_h=", args.win_h ) ){
+			com_printf( " Window height = %d\n", args.win_h );
+		} else if ( try_to_get_argument( "-fps=", args.fps ) ){
+			com_printf( " FPS limit     = %d\n", args.fps );
+		} else if ( try_to_get_argument( "-alignment=", args.alignment ) ) {
+			com_printf( " Alignment     = %d\n", args.alignment );
+		} else if ( try_to_get_argument( "-pulse_demo=", args.pulse_demo ) ) {
+			com_printf( " Pulse demo    = %d (0 means off, non-zero means on)\n", args.pulse_demo );
+		} else if ( try_to_get_argument( "-pulse_min=", args.pulse_min ) ) {
+			com_printf( " Pulse min     = %dms\n", args.pulse_min );		
+		} else if ( try_to_get_argument( "-pulse_max=", args.pulse_max ) ) {
+			com_printf( " Pulse max     = %dms\n", args.pulse_max );
+		} else if ( try_to_get_argument( "-use_lines=", args.use_lines ) ) {
+			com_printf( " Use lines     = %d (0 means off, non-zero means on)\n", args.use_lines );
 		}
 	}
 
